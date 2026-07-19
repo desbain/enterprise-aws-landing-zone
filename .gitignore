@@ -42,3 +42,26 @@ terraform.rc
 # Optional: ignore plan files saved before destroying Terraform configuration
 # Uncomment the line below if you want to ignore planout files.
 # planout
+# Terraform variable values
+*.tfvars
+*.tfvars.json
+
+# Permit sanitized examples
+!*.tfvars.example
+
+# Terraform working directory
+.terraform/
+
+# Local state files
+*.tfstate
+*.tfstate.*
+
+# Plan files
+*.tfplan
+
+# Local state exports
+state.json
+
+# Variable files
+*.tfvars
+!*.tfvars.example
