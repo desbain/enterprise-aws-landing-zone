@@ -1,101 +1,81 @@
 # Enterprise AWS Landing Zone
 
-This project documents the design and implementation of an enterprise AWS multi-account environment using:
+> Enterprise-grade AWS multi-account landing zone built using AWS Organizations, AWS Control Tower, IAM Identity Center, Microsoft Entra ID, Terraform, and AWS security services.
+
+---
+
+## Project Overview
+
+This project demonstrates how to design, deploy, secure, and automate an enterprise AWS environment following AWS Well-Architected and AWS Control Tower best practices.
+
+The environment includes centralized identity management, multi-account governance, service control policies (SCPs), security services, networking, and infrastructure as code.
+
+---
+
+## Objectives
+
+- Build an enterprise AWS landing zone
+- Implement AWS Organizations
+- Deploy AWS Control Tower
+- Configure IAM Identity Center
+- Integrate Microsoft Entra ID
+- Provision users with SCIM
+- Federate authentication with SAML
+- Implement Service Control Policies
+- Deploy centralized logging
+- Automate with Terraform
+- Implement CI/CD with GitHub Actions
+
+---
+
+## Technologies
 
 - AWS Organizations
 - AWS Control Tower
 - AWS IAM Identity Center
 - Microsoft Entra ID
-- SAML 2.0 federation
-- SCIM 2.0 provisioning
-- Service Control Policies
-- Permission sets
-- Centralized logging and security services
+- SAML 2.0
+- SCIM
+- AWS Config
+- AWS CloudTrail
+- Amazon GuardDuty
+- AWS Security Hub
+- AWS Inspector
 - Terraform
 - GitHub Actions
 
-## Project Objectives
+---
 
-- Build a governed AWS multi-account landing zone.
-- Separate security, infrastructure, non-production, production, sandbox, and suspended workloads.
-- Centralize workforce authentication through Microsoft Entra ID.
-- Automatically provision users and groups through SCIM.
-- Apply least-privilege access through IAM Identity Center permission sets.
-- Enforce organization-wide guardrails through Service Control Policies.
-- Centralize CloudTrail, AWS Config, GuardDuty, Security Hub, and Inspector.
-- Document and automate the environment using Terraform.
+## Project Status
 
-## Current Status
+| Phase | Status |
+|--------|--------|
+| Repository | ✅ Complete |
+| Control Tower | 🚧 In Progress |
+| AWS Organizations | 🚧 In Progress |
+| IAM Identity Center | ⏳ Planned |
+| SCPs | ⏳ Planned |
+| Terraform | ⏳ Planned |
+| Security Services | ⏳ Planned |
 
-- [x] AWS Organizations created
-- [x] IAM Identity Center enabled
-- [x] AWS Control Tower deployment started
-- [x] Security and Sandbox OUs created
-- [x] AWS Config integration selected
-- [x] Centralized CloudTrail integration selected
-- [ ] Control Tower landing zone healthy
-- [ ] Enterprise OUs created
-- [ ] Workload accounts provisioned
-- [ ] Permission sets created
-- [ ] SCPs deployed
-- [ ] Microsoft Entra ID configured
-- [ ] SAML federation configured
-- [ ] SCIM provisioning configured
-- [ ] Security services centralized
-- [ ] Terraform automation completed
+---
 
-## Proposed OU Structure
+## Repository Structure
 
 ```text
-Root
-├── Security
-├── Infrastructure
-├── NonProduction
-├── Production
-├── Sandbox
-└── Suspended
+architecture/
+docs/
+entra-id/
+networking/
+organizations/
+permission-sets/
+scps/
+screenshots/
+terraform/
+```
 
-Add a security-focused `.gitignore`:
+---
 
-```bash
-cat > .gitignore <<'EOF'
-# Terraform
-.terraform/
-*.tfstate
-*.tfstate.*
-crash.log
-crash.*.log
-*.tfvars
-*.tfvars.json
-.terraform.lock.hcl
+## George Awa
 
-# Credentials and secrets
-.env
-.env.*
-*.pem
-*.key
-*.pfx
-*.p12
-credentials
-config
-secrets*
-*secret*
-*token*
-
-# Operating systems
-.DS_Store
-Thumbs.db
-
-# Editors
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# Temporary files
-tmp/
-temp/
-*.log
-
-# Screenshots requiring review
-screenshots/private/
+This project is maintained as part of a Cloud Security and AWS Architecture portfolio.
