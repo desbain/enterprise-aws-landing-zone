@@ -18,3 +18,7 @@ output "permission_set_arns" {
     security_auditor = aws_ssoadmin_permission_set.security_auditor.arn
   }
 }
+output "organization_accounts" {
+  description = "Active AWS Organization account names and IDs"
+  value       = local.organization_accounts
+}
