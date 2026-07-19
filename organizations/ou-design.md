@@ -1,52 +1,19 @@
-# Organizational Unit Design
+# AWS Organizational Unit Design
 
-## Root
+## Objective
 
-The AWS Organizations root is reserved for organization-wide governance. Custom SCPs should be tested on lower-level OUs before being attached to the root.
+Design a scalable AWS Organizations structure that separates security, infrastructure, non-production, production, sandbox, and suspended workloads.
 
-## Security OU
+The design supports centralized governance through AWS Control Tower, Service Control Policies, IAM Identity Center, centralized logging, and delegated security administration.
 
-Contains accounts dedicated to security, compliance, logging, and auditing.
+---
 
-Planned accounts:
+## Current Structure
 
-- Log Archive
-- Audit
-- AWS Config Aggregator
-- CloudTrail Administrator
-- Security Tooling
-
-## Infrastructure OU
-
-Contains shared infrastructure services.
-
-Planned accounts:
-
-- Network
-- Shared Services
-
-## NonProduction OU
-
-Contains development and pre-production workloads.
-
-Planned accounts:
-
-- Development
-- Testing
-- Staging
-
-## Production OU
-
-Contains production workloads.
-
-Planned accounts:
-
-- Production
-
-## Sandbox OU
-
-Contains experimental workloads with restrictive cost, service, and Region controls.
-
-## Suspended OU
-
-Contains quarantined or decommissioning accounts. A restrictive SCP will prevent normal resource activity.
+```text
+Root
+├── Security
+│   ├── Audit
+│   └── Log Archive
+├── Sandbox
+└── Management Account
