@@ -25,3 +25,9 @@ variable "suspended_ou_id" {
 variable "infrastructure_ou_id" {
   type = string
 }
+
+variable "enable_policy_attachments" {
+  description = "Controls whether SCPs are attached to organizational units."
+  type        = bool
+  default     = false
+}
