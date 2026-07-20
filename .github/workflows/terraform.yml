@@ -14,6 +14,12 @@ jobs:
       matrix:
         module:
           - terraform/cloudtrail
+          - terraform/config
+          - terraform/guardduty
+          - terraform/securityhub
+          - terraform/access-analyzer
+          - terraform/inspector
+          - terraform/backup
 
     defaults:
       run:
