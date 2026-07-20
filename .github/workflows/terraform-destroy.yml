@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       confirmation:
-        description: 'Type DESTROY to confirm deletion'
+        description: "Type DESTROY to permanently delete the AWS resources"
         required: true
         type: string
 
@@ -12,13 +12,17 @@ permissions:
   contents: read
   id-token: write
 
+env:
+  AWS_REGION: us-east-2
+  TF_VERSION: "1.13.5"
+
 concurrency:
-  group: terraform-destroy
+  group: terraform-landing-zone-destroy
   cancel-in-progress: false
 
 jobs:
   confirm:
-    name: Confirm destruction
+    name: Confirm destroy request
     runs-on: ubuntu-latest
 
     steps:
@@ -26,10 +30,12 @@ jobs:
         shell: bash
         run: |
           if [[ "${{ inputs.confirmation }}" != "DESTROY" ]]; then
-            echo "Destruction cancelled."
-            echo "You must type DESTROY exactly."
+            echo "::error::Destruction was not confirmed."
+            echo "Run the workflow again and type DESTROY exactly."
             exit 1
           fi
+
+          echo "Destruction confirmed."
 
   destroy:
     name: Destroy - ${{ matrix.module }}
@@ -42,9 +48,9 @@ jobs:
       matrix:
         module:
           - inspector
-          - access-analyzer
           - securityhub
           - guardduty
+          - access-analyzer
           - config
           - cloudtrail
           - backup
@@ -56,24 +62,68 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
+
+      - name: Validate AWS role secret
+        shell: bash
+        working-directory: .
+        env:
+          AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
+        run: |
+          if [[ -z "$AWS_ROLE_ARN" ]]; then
+            echo "::error::The AWS_ROLE_ARN repository secret is missing."
+            echo "Create it under:"
+            echo "Settings > Secrets and variables > Actions > New repository secret"
+            exit 1
+          fi
+
+          if [[ ! "$AWS_ROLE_ARN" =~ ^arn:aws:iam::[0-9]{12}:role/.+ ]]; then
+            echo "::error::AWS_ROLE_ARN is not a valid IAM role ARN."
+            exit 1
+          fi
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v5
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
+          role-session-name: terraform-destroy-${{ matrix.module }}
+          aws-region: ${{ env.AWS_REGION }}
+          mask-aws-account-id: true
+
+      - name: Verify AWS identity
+        run: aws sts get-caller-identity
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.13.5
+          terraform_version: ${{ env.TF_VERSION }}
+          terraform_wrapper: false
+
+      - name: Verify module directory
+        run: |
+          if [[ ! -f "main.tf" ]] && [[ ! -f "terraform.tf" ]] && [[ ! -f "providers.tf" ]]; then
+            echo "::error::No Terraform configuration was found in terraform/${{ matrix.module }}"
+            exit 1
+          fi
 
       - name: Terraform init
         run: terraform init -input=false
 
-      - name: Preview destruction
-        run: terraform plan -destroy -input=false -no-color
+      - name: Terraform validate
+        run: terraform validate
+
+      - name: Show Terraform state
+        run: |
+          echo "Resources currently tracked by Terraform:"
+          terraform state list || true
+
+      - name: Create destroy plan
+        run: |
+          terraform plan \
+            -destroy \
+            -input=false \
+            -no-color \
+            -out=destroy.tfplan
 
       - name: Destroy resources
-        run: terraform destroy -auto-approve -input=false
+        run: terraform apply -input=false -auto-approve destroy.tfplan

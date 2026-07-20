@@ -1,9 +1,10 @@
-name: Terraform
+name: Terraform Landing Zone
 
 on:
   push:
     branches:
       - main
+      - feature/organizations
     paths:
       - "terraform/**"
       - ".github/workflows/terraform.yml"
@@ -21,6 +22,10 @@ permissions:
   contents: read
   id-token: write
 
+env:
+  AWS_REGION: us-east-2
+  TF_VERSION: "1.13.5"
+
 jobs:
   terraform:
     name: Terraform - ${{ matrix.module }}
@@ -30,13 +35,13 @@ jobs:
       fail-fast: false
       matrix:
         module:
+          - access-analyzer
+          - backup
           - cloudtrail
           - config
           - guardduty
-          - securityhub
-          - access-analyzer
           - inspector
-          - backup
+          - securityhub
 
     defaults:
       run:
@@ -45,21 +50,48 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
+
+      - name: Validate AWS role secret
+        shell: bash
+        working-directory: .
+        env:
+          AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
+        run: |
+          if [[ -z "$AWS_ROLE_ARN" ]]; then
+            echo "::error::The AWS_ROLE_ARN repository secret is missing."
+            echo "Create it under:"
+            echo "Settings > Secrets and variables > Actions > New repository secret"
+            exit 1
+          fi
+
+          if [[ ! "$AWS_ROLE_ARN" =~ ^arn:aws:iam::[0-9]{12}:role/.+ ]]; then
+            echo "::error::AWS_ROLE_ARN is not a valid IAM role ARN."
+            exit 1
+          fi
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v5
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
+          role-session-name: github-terraform-${{ matrix.module }}
+          aws-region: ${{ env.AWS_REGION }}
+          mask-aws-account-id: true
+
+      - name: Verify AWS identity
+        run: aws sts get-caller-identity
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.13.5
+          terraform_version: ${{ env.TF_VERSION }}
+          terraform_wrapper: false
+
+      - name: Terraform version
+        run: terraform version
 
       - name: Terraform format
-        run: terraform fmt -check
+        run: terraform fmt -check -recursive
 
       - name: Terraform init
         run: terraform init -input=false
