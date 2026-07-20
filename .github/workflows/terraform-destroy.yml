@@ -1,0 +1,79 @@
+name: Destroy AWS Landing Zone
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: 'Type DESTROY to confirm deletion'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: terraform-destroy
+  cancel-in-progress: false
+
+jobs:
+  confirm:
+    name: Confirm destruction
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Verify confirmation
+        shell: bash
+        run: |
+          if [[ "${{ inputs.confirmation }}" != "DESTROY" ]]; then
+            echo "Destruction cancelled."
+            echo "You must type DESTROY exactly."
+            exit 1
+          fi
+
+  destroy:
+    name: Destroy - ${{ matrix.module }}
+    needs: confirm
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        module:
+          - inspector
+          - access-analyzer
+          - securityhub
+          - guardduty
+          - config
+          - cloudtrail
+          - backup
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: terraform/${{ matrix.module }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v5
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.13.5
+
+      - name: Terraform init
+        run: terraform init -input=false
+
+      - name: Preview destruction
+        run: terraform plan -destroy -input=false -no-color
+
+      - name: Destroy resources
+        run: terraform destroy -auto-approve -input=false

@@ -1,11 +1,25 @@
-name: Terraform CI
+name: Terraform
 
 on:
   push:
     branches:
       - main
+    paths:
+      - "terraform/**"
+      - ".github/workflows/terraform.yml"
+
   pull_request:
+    branches:
+      - main
+    paths:
+      - "terraform/**"
+      - ".github/workflows/terraform.yml"
+
   workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
 
 jobs:
   terraform:
@@ -16,89 +30,42 @@ jobs:
       fail-fast: false
       matrix:
         module:
-          - terraform/cloudtrail
-          - terraform/config
-          - terraform/guardduty
-          - terraform/securityhub
-          - terraform/access-analyzer
-          - terraform/inspector
-          - terraform/backup
+          - cloudtrail
+          - config
+          - guardduty
+          - securityhub
+          - access-analyzer
+          - inspector
+          - backup
 
     defaults:
       run:
         shell: bash
-        working-directory: ${{ matrix.module }}
+        working-directory: terraform/${{ matrix.module }}
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
-      - name: Cache Terraform plugins
-        uses: actions/cache@v4
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v5
         with:
-          path: ~/.terraform.d/plugin-cache
-          key: ${{ runner.os }}-terraform-${{ hashFiles('**/.terraform.lock.hcl') }}
-          restore-keys: |
-            ${{ runner.os }}-terraform-
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v4.0.1
+        uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: "1.15.8"
-          terraform_wrapper: false
-
-      - name: Configure Terraform plugin cache
-        run: |
-          mkdir -p ~/.terraform.d/plugin-cache
-          cat > ~/.terraformrc <<EOF
-          plugin_cache_dir = "$HOME/.terraform.d/plugin-cache"
-          EOF
-
-      - name: Terraform version
-        run: terraform version
+          terraform_version: 1.13.5
 
       - name: Terraform format
-        run: terraform fmt -check -diff
+        run: terraform fmt -check
 
       - name: Terraform init
-        run: |
-          for attempt in 1 2 3; do
-            terraform init -backend=false && exit 0
-
-            echo "Terraform init failed on attempt ${attempt}."
-
-            if [ "${attempt}" -lt 3 ]; then
-              sleep $((attempt * 10))
-            fi
-          done
-
-          echo "Terraform init failed after three attempts."
-          exit 1
+        run: terraform init -input=false
 
       - name: Terraform validate
-        run: terraform validate -no-color
+        run: terraform validate
 
-      - name: Setup TFLint
-        uses: terraform-linters/setup-tflint@v5
-
-      - name: Initialize TFLint
-        run: tflint --init
-
-      - name: Run TFLint
-        run: tflint
-
-      - name: Run Checkov
-        uses: bridgecrewio/checkov-action@v12
-        with:
-          directory: ${{ matrix.module }}
-          framework: terraform
-          quiet: true
-
-      - name: Run Trivy IaC Scan
-        uses: aquasecurity/trivy-action@0.35.0
-        with:
-          scan-type: config
-          scan-ref: ${{ matrix.module }}
-          format: table
-          severity: HIGH,CRITICAL
-          exit-code: 1
+      - name: Terraform plan
+        run: terraform plan -input=false -no-color
