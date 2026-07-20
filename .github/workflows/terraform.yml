@@ -33,11 +33,26 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
 
+      - name: Cache Terraform plugins
+        uses: actions/cache@v4
+        with:
+          path: ~/.terraform.d/plugin-cache
+          key: ${{ runner.os }}-terraform-${{ hashFiles('**/.terraform.lock.hcl') }}
+          restore-keys: |
+            ${{ runner.os }}-terraform-
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v4.0.1
         with:
-          terraform_version: "1.15.5"
+          terraform_version: "1.15.8"
           terraform_wrapper: false
+
+      - name: Configure Terraform plugin cache
+        run: |
+          mkdir -p ~/.terraform.d/plugin-cache
+          cat > ~/.terraformrc <<EOF
+          plugin_cache_dir = "$HOME/.terraform.d/plugin-cache"
+          EOF
 
       - name: Terraform version
         run: terraform version
@@ -51,27 +66,39 @@ jobs:
             terraform init -backend=false && exit 0
 
             echo "Terraform init failed on attempt ${attempt}."
-            sleep $((attempt * 10))
+
+            if [ "${attempt}" -lt 3 ]; then
+              sleep $((attempt * 10))
+            fi
           done
 
           echo "Terraform init failed after three attempts."
           exit 1
 
-            - name: Terraform validate
-              run: terraform validate -no-color
+      - name: Terraform validate
+        run: terraform validate -no-color
 
-            - name: Setup TFLint
-              uses: terraform-linters/setup-tflint@v5
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v5
 
-            - name: Initialize TFLint
-              run: tflint --init
+      - name: Initialize TFLint
+        run: tflint --init
 
-                  - name: Run TFLint
-                    run: tflint
+      - name: Run TFLint
+        run: tflint
 
-           - name: Run Checkov
-             uses: bridgecrewio/checkov-action@v12
-             with:
-               directory: ${{ matrix.module }}
-               framework: terraform
-               quiet: true
+      - name: Run Checkov
+        uses: bridgecrewio/checkov-action@v12
+        with:
+          directory: ${{ matrix.module }}
+          framework: terraform
+          quiet: true
+
+      - name: Run Trivy IaC Scan
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: config
+          scan-ref: ${{ matrix.module }}
+          format: table
+          severity: HIGH,CRITICAL
+          exit-code: 1
