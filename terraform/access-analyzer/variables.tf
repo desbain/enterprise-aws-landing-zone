@@ -1,8 +1,9 @@
 variable "aws_region" {
-  default = "us-east-2"
+  description = "AWS Region"
+  type        = string
 }
 
 variable "environment" {
-  default = "dev"
+  description = "Deployment environment"
+  type        = string
 }
-
