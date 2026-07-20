@@ -1,0 +1,47 @@
+name: Terraform CI
+
+on:
+  push:
+    branches:
+      - main
+      - feature/**
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  terraform:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        module:
+          - terraform/cloudtrail
+          - terraform/config
+          - terraform/guardduty
+          - terraform/securityhub
+          - terraform/access-analyzer
+          - terraform/inspector
+          - terraform/backup
+
+    defaults:
+      run:
+        working-directory: ${{ matrix.module }}
+
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        run: terraform init -backend=false
+
+      - name: Terraform Format
+        run: terraform fmt -check
+
+      - name: Terraform Validate
+        run: terraform validate

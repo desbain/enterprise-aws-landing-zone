@@ -1,81 +1,267 @@
-# Enterprise AWS Landing Zone
+# Enterprise AWS Multi-Account Landing Zone
 
-> Enterprise-grade AWS multi-account landing zone built using AWS Organizations, AWS Control Tower, IAM Identity Center, Microsoft Entra ID, Terraform, and AWS security services.
-
----
-
-## Project Overview
-
-This project demonstrates how to design, deploy, secure, and automate an enterprise AWS environment following AWS Well-Architected and AWS Control Tower best practices.
-
-The environment includes centralized identity management, multi-account governance, service control policies (SCPs), security services, networking, and infrastructure as code.
+A production-inspired **Enterprise AWS Landing Zone** built with **Terraform** that demonstrates secure multi-account AWS architecture, centralized governance, security monitoring, Infrastructure as Code (IaC), and DevSecOps best practices.
 
 ---
 
-## Objectives
+# Enterprise Architecture
 
-- Build an enterprise AWS landing zone
-- Implement AWS Organizations
-- Deploy AWS Control Tower
-- Configure IAM Identity Center
-- Integrate Microsoft Entra ID
-- Provision users with SCIM
-- Federate authentication with SAML
-- Implement Service Control Policies
-- Deploy centralized logging
-- Automate with Terraform
-- Implement CI/CD with GitHub Actions
+![Enterprise AWS Landing Zone](architecture/enterprise-landing-zone-architecture.png)
 
 ---
 
-## Technologies
+# Project Overview
 
+This project demonstrates how to build a secure, scalable, and well-governed AWS environment using Infrastructure as Code. The repository follows AWS security best practices by implementing centralized governance, identity management, logging, threat detection, vulnerability management, and backup services.
+
+The project is organized into reusable Terraform modules and validated through GitHub Actions CI.
+
+---
+
+# Key Features
+
+- Multi-Account AWS Landing Zone
 - AWS Organizations
-- AWS Control Tower
-- AWS IAM Identity Center
-- Microsoft Entra ID
-- SAML 2.0
-- SCIM
+- Organizational Units (OUs)
+- IAM Identity Center (AWS IAM Identity Center)
+- Permission Sets
+- Account Assignments
+- Service Control Policies (SCPs)
+- Organization CloudTrail
 - AWS Config
-- AWS CloudTrail
 - Amazon GuardDuty
 - AWS Security Hub
-- AWS Inspector
-- Terraform
-- GitHub Actions
+- IAM Access Analyzer
+- Amazon Inspector
+- AWS Backup
+- Terraform Remote State
+- Modular Terraform Architecture
+- GitHub Actions Continuous Integration
 
 ---
 
-## Project Status
+# Architecture
 
-| Phase | Status |
-|--------|--------|
-| Repository | ✅ Complete |
-| Control Tower | 🚧 In Progress |
-| AWS Organizations | 🚧 In Progress |
-| IAM Identity Center | ⏳ Planned |
-| SCPs | ⏳ Planned |
-| Terraform | ⏳ Planned |
-| Security Services | ⏳ Planned |
-
----
-
-## Repository Structure
-
-```text
-architecture/
-docs/
-entra-id/
-networking/
-organizations/
-permission-sets/
-scps/
-screenshots/
-terraform/
+```
+                    AWS Organizations
+                           │
+        ┌──────────────────┼──────────────────┐
+        │                  │                  │
+ Security OU       Infrastructure OU     Workloads OU
+        │                  │                  │
+ GuardDuty           Shared Services      Dev Account
+ Security Hub        Networking           Test Account
+ Inspector           Transit Gateway      Prod Account
+ Access Analyzer
 ```
 
 ---
 
-## George Awa
+# Repository Structure
 
-This project is maintained as part of a Cloud Security and AWS Architecture portfolio.
+```
+enterprise-aws-landing-zone/
+│
+├── .github/
+│   └── workflows/
+│       └── terraform.yml
+│
+├── architecture/
+│   ├── enterprise-landing-zone-architecture.png
+│   ├── organizations-design.png
+│   ├── security-services.png
+│   ├── terraform-module-architecture.png
+│   └── github-actions-pipeline.png
+│
+├── docs/
+│
+├── terraform/
+│   ├── access-analyzer/
+│   ├── backup/
+│   ├── cloudtrail/
+│   ├── config/
+│   ├── guardduty/
+│   ├── inspector/
+│   ├── organizations/
+│   ├── permission-sets/
+│   ├── scps/
+│   └── securityhub/
+│
+└── README.md
+```
+
+---
+
+# Completed Modules
+
+| Module | Status |
+|----------|--------|
+| AWS Organizations | ✅ Complete |
+| Organizational Units | ✅ Complete |
+| IAM Identity Center | ✅ Complete |
+| Permission Sets | ✅ Complete |
+| Account Assignments | ✅ Complete |
+| Service Control Policies | ✅ Complete |
+| AWS CloudTrail | ✅ Complete |
+| AWS Config | ✅ Complete |
+| Amazon GuardDuty | ✅ Complete |
+| AWS Security Hub | ✅ Complete |
+| IAM Access Analyzer | ✅ Complete |
+| Amazon Inspector | ✅ Complete |
+| AWS Backup | ✅ Complete |
+| GitHub Actions CI | ✅ Complete |
+
+---
+
+# Terraform Modules
+
+## Governance
+
+- AWS Organizations
+- Organizational Units
+- IAM Identity Center
+- Permission Sets
+- Account Assignments
+- Service Control Policies
+
+## Logging & Compliance
+
+- AWS CloudTrail
+- AWS Config
+
+## Security
+
+- Amazon GuardDuty
+- AWS Security Hub
+- IAM Access Analyzer
+- Amazon Inspector
+
+## Business Continuity
+
+- AWS Backup
+
+---
+
+# GitHub Actions CI
+
+Every push and pull request automatically performs:
+
+- Terraform Init
+- Terraform Format Check
+- Terraform Validate
+
+Future enhancements:
+
+- TFLint
+- tfsec
+- Checkov
+
+---
+
+# Security Services
+
+| Service | Purpose |
+|----------|----------|
+| CloudTrail | API Activity Logging |
+| AWS Config | Configuration Compliance |
+| GuardDuty | Threat Detection |
+| Security Hub | Security Findings Aggregation |
+| Access Analyzer | IAM Access Analysis |
+| Amazon Inspector | Vulnerability Management |
+| AWS Backup | Centralized Backup Management |
+
+---
+
+# Skills Demonstrated
+
+- AWS Organizations
+- Multi-Account Governance
+- IAM Identity Center
+- Infrastructure as Code (Terraform)
+- Security Architecture
+- Identity & Access Management
+- Cloud Security
+- AWS Security Services
+- GitHub Actions
+- DevSecOps
+- Modular Infrastructure Design
+
+---
+
+# Deployment
+
+Clone the repository
+
+```bash
+git clone https://github.com/desbain/enterprise-aws-landing-zone.git
+```
+
+Navigate to any module
+
+```bash
+cd terraform/guardduty
+```
+
+Initialize Terraform
+
+```bash
+terraform init
+```
+
+Validate
+
+```bash
+terraform validate
+```
+
+Generate a plan
+
+```bash
+terraform plan
+```
+
+---
+
+# Future Enhancements
+
+- TFLint Integration
+- tfsec Security Scanning
+- Checkov Policy Scanning
+- AWS Security Lake
+- Amazon Detective
+- AWS Audit Manager
+- Firewall Manager
+- Organization-wide delegated administrator configuration
+- Automated architecture documentation
+
+---
+
+# Technologies Used
+
+- Terraform
+- AWS Organizations
+- AWS IAM Identity Center
+- Amazon GuardDuty
+- AWS Config
+- AWS CloudTrail
+- AWS Security Hub
+- IAM Access Analyzer
+- Amazon Inspector
+- AWS Backup
+- GitHub Actions
+
+---
+
+# Author
+
+**George Awa**
+
+Senior Cybersecurity GRC Specialist | Cloud Security | AWS | Terraform | DevSecOps
+
+LinkedIn: *(Add your LinkedIn profile)*
+
+---
+
+# License
+
+This project is licensed under the MIT License.
