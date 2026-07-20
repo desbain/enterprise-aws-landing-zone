@@ -1,21 +1,19 @@
+data "aws_iam_policy_document" "config_assume_role" {
+  statement {
+    effect = "Allow"
+
+    principals {
+      type        = "Service"
+      identifiers = ["config.amazonaws.com"]
+    }
+
+    actions = ["sts:AssumeRole"]
+  }
+}
+
 resource "aws_iam_role" "config" {
-  name = "AWSConfigRole"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-
-    Statement = [
-      {
-        Effect = "Allow"
-
-        Principal = {
-          Service = "config.amazonaws.com"
-        }
-
-        Action = "sts:AssumeRole"
-      }
-    ]
-  })
+  name               = "AWSConfigServiceRole"
+  assume_role_policy = data.aws_iam_policy_document.config_assume_role.json
 }
 
 resource "aws_iam_role_policy_attachment" "config" {
