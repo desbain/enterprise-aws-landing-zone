@@ -57,5 +57,14 @@ jobs:
           echo "Terraform init failed after three attempts."
           exit 1
 
-      - name: Terraform validate
-        run: terraform validate -no-color
+            - name: Terraform validate
+              run: terraform validate -no-color
+
+            - name: Setup TFLint
+              uses: terraform-linters/setup-tflint@v5
+
+            - name: Initialize TFLint
+              run: tflint --init
+
+            - name: Run TFLint
+              run: tflint --recursive
