@@ -13,10 +13,16 @@ jobs:
     runs-on: ubuntu-latest
 
     strategy:
-      fail-fast: false
-      matrix:
-        module:
-          - terraform/cloudtrail
+   fail-fast: false
+  matrix:
+    module:
+      - terraform/cloudtrail
+      - terraform/config
+      - terraform/guardduty
+      - terraform/securityhub
+      - terraform/access-analyzer
+      - terraform/inspector
+      - terraform/backup
 
     defaults:
       run:
