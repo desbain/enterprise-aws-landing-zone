@@ -1,0 +1,19 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "ProtectSecurityHub",
+      "Effect": "Deny",
+      "Action": [
+        "securityhub:DisableSecurityHub",
+        "securityhub:DeleteInvitations",
+        "securityhub:DisassociateFromAdministratorAccount",
+        "securityhub:DisassociateMembers",
+        "securityhub:DeleteMembers",
+        "securityhub:DeleteInsight",
+        "securityhub:BatchDisableStandards"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
